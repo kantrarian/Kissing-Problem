@@ -94,7 +94,7 @@ theorem k5_bound_value : k5_cert 1 = k5_coeff 0 * 48 := by
 
 /-- The kissing number in dimension 5 is at most 48.
     Uses the Delsarte LP bound with the certificate f(t) = (t+5/7)²(t+1/7)²(t-1/2).
-    PSD for k=1,2,3 proved via feature maps; k=4,5 sorry'd. -/
+    All PSD conditions proved via trace-free tensor feature maps. -/
 theorem K5_le_48 : K 5 ≤ 48 := by
   apply sSup_le
   intro x hx

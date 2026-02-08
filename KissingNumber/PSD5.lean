@@ -1,4 +1,6 @@
 import KissingNumber.Gegenbauer5
+import KissingNumber.PSD4_d5_CrossTerms
+import KissingNumber.PSD5_d5_CrossTerms
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Data.Real.Basic
@@ -17,7 +19,8 @@ The proof uses feature maps (trace-free moment tensors) for each degree k.
 - k=1: c = 1 (trivial: P₅₁(t) = t, Gram matrix is PSD)
 - k=2: c = 4/5, φ₂(x)_{ab} = x_a x_b - δ_{ab}/5
 - k=3: c = 4/7, φ₃(x)_{abc} = x_a x_b x_c - (1/7)(x_a δ_{bc} + x_b δ_{ac} + x_c δ_{ab})
-- k=4, k=5: feature map proofs deferred (sorry)
+- k=4: c = 8/21, φ₄(x)_{abcd} = x_a x_b x_c x_d - (1/9)B₄ + (1/63)C₄
+- k=5: c = 8/33, φ₅(x)_{abcde} = x_a x_b x_c x_d x_e - (1/11)B₅ + (1/99)C₅
 -/
 
 open scoped BigOperators RealInnerProductSpace
@@ -242,7 +245,7 @@ private lemma phi3_d5_kernel (x y : EuclideanSpace ℝ (Fin 5)) (hx : ‖x‖ = 
 
 include hunit
 /-- PSD for all k ≥ 1 in dimension 5: the main theorem needed for the Delsarte bound.
-    k=1,2,3 are proved via feature maps; k=4,5 are sorry'd. -/
+    All cases proved via feature maps (trace-free moment tensors). -/
 theorem P5_sum_nonneg (k : Fin 6) (hk : k ≠ 0) :
     0 ≤ ∑ i : Fin N, ∑ j : Fin N, P5 k (@inner ℝ _ _ (u i) (u j)) := by
   fin_cases k
@@ -250,7 +253,7 @@ theorem P5_sum_nonneg (k : Fin 6) (hk : k ≠ 0) :
   · exact P5_sum_nonneg_k1 u
   · exact psd_of_kernel_5 u (4 / 5) (by norm_num) phi2_d5 phi2_d5_kernel hunit
   · exact psd_of_kernel_5 u (4 / 7) (by norm_num) phi3_d5 phi3_d5_kernel hunit
-  · sorry -- k=4: trace-free 4-tensor feature map deferred
-  · sorry -- k=5: trace-free 5-tensor feature map deferred
+  · exact psd_of_kernel_5 u (8 / 21) (by norm_num) phi4_d5_Feature phi4_d5_Feature_kernel hunit
+  · exact psd_of_kernel_5 u (8 / 33) (by norm_num) phi5_d5_Feature phi5_d5_Feature_kernel hunit
 
 end
