@@ -1,0 +1,20 @@
+{
+  "summary": {
+    "N_target": 40,
+    "n_restarts": 1,
+    "certified_any": true,
+    "best_min_gap": 0.0,
+    "best_restart": 0
+  },
+  "runs": [
+    {
+      "restart": 0,
+      "certified": true,
+      "final_min_gap": 0.0,
+      "final_rad_err": 0.0,
+      "best_min_gap": 0.0,
+      "best_iter": 0,
+      "best_phase": "repair"
+    }
+  ]
+}

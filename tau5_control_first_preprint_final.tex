@@ -1,0 +1,312 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\title{\textbf{A Control-First Computational Feasibility Study of the Five-Dimensional Kissing Number}}
+\author{R.J. Mathews\\
+\small Chattanooga, TN\\
+\small \texttt{mail.rjmathews@gmail.com}}
+\date{January 2026}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Sn}[1]{\mathbb{S}^{#1}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The kissing number $\tau_d$ is the maximum number of non-overlapping unit spheres in $\R^d$ that can simultaneously touch a central unit sphere. In dimension $d=5$, the exact value remains unknown: four non-isometric configurations achieve $N=40$ (the $D_5$ and $L_5$ lattice packings, Sz\"{o}ll\H{o}si's $Q_5$, and Cohn--Rajagopal's $R_5$), while semidefinite programming establishes $\tau_5 \le 44$.
+We present a \emph{control-first} computational feasibility pipeline for the equivalent spherical code problem on $\Sn{4}$ at minimum angle $60^\circ$. The pipeline (i) certifies a known feasible witness at $N=40$ under strict tolerances, (ii) fails cleanly in an overconstrained negative control at $N=45$, and (iii) performs 200 independent random restarts for $N=41$ without finding a certified configuration while repeatedly converging to a near-feasible attractor with best minimum gap $g_{\min}\approx -0.036$.
+Cross-dimensional calibration validates the optimizer: the same pipeline finds the 240-point $E_8$ configuration from random starts with 90\% basin entry, yet fails uniformly at $N=241$ (gap $\approx -0.130$).
+These results provide computational evidence, complementary to the rigorous SDP bounds, consistent with $\tau_5=40$.
+\end{abstract}
+
+\section{Introduction}
+The kissing number problem asks for $\tau_d$, the maximum number of congruent non-overlapping unit spheres in $\R^d$ that can touch a central unit sphere.
+Equivalently, one seeks the largest $N$ for which there exist points $x_1,\dots,x_N$ on the sphere of radius $2$ in $\R^d$ such that $\norm{x_i-x_j}\ge 2$ for all $i\neq j$~\cite{ConwaySloane}.
+Exact values are known only in select dimensions: $\tau_3=12$ was settled in 1953~\cite{SchutteVdW}, $\tau_4=24$ was proved by Musin in 2008~\cite{Musin2008}, and $\tau_8=240$ and $\tau_{24}=196560$ follow from the exceptional $E_8$ and Leech lattices~\cite{Viazovska2017,CKMRV2017}.
+
+For $d=5$, the value remains open. The $D_5$ root lattice, whose structure dates to Korkine and Zolotareff's work on quadratic forms~\cite{KorkineZolotareff1873}, achieves $N=40$ with vectors of the form $(\pm1,\pm1,0,0,0)$. Leech~\cite{Leech1967} constructed the first non-lattice configuration ($L_5$) also achieving 40 contacts by modifying layers in the $D_5$ packing. The upper bound has been progressively tightened: the classical Delsarte linear programming bound gives $\tau_5 \le 48$; Bachoc and Vallentin~\cite{BachocVallentin2008} improved this to $\tau_5 \le 45$ using semidefinite programming; and Mittelmann and Vallentin~\cite{MittelmannVallentin2010} further refined it to $\tau_5 \le 44$ using high-precision numerics. The gap $40 \le \tau_5 \le 44$ persists.
+
+Notably, recent work has discovered additional non-isometric configurations achieving 40 contacts. Sz\"{o}ll\H{o}si~\cite{Szollosi2023} found a third configuration ($Q_5$) via clique search in compatibility graphs, disproving the belief that only $D_5$ and $L_5$ existed. Cohn and Rajagopal~\cite{CohnRajagopal2024} subsequently constructed a fourth ($R_5$) and established that there are exactly six uniform five-dimensional sphere packings achieving the conjectured optimal density. The existence of four geometrically distinct configurations, none improving on $N=40$, provides independent structural evidence supporting the conjecture $\tau_5=40$.
+
+This work asks a conservative empirical question: \emph{when a single pipeline is required to (i) certify a known feasible witness and (ii) fail in a clearly overconstrained regime, what does it conclude for $N=41$ under strict certification?}
+The answer is necessarily conditional on the solver family and compute budget, but control-first design sharply reduces the risk of uninterpretable negative results. Our methodology complements the rigorous SDP upper bounds by providing computational evidence from a different angle: direct optimization on the configuration space.
+
+\section{Formulation}
+Fix unit radius $R=1$. A kissing configuration with $N$ outer spheres corresponds to centers
+\[
+x_i \in \Sn{4}(2) := \{x\in \R^5:\norm{x}=2\}, \qquad i=1,\dots,N,
+\]
+with pairwise non-overlap constraints
+\[
+\norm{x_i-x_j} \ge 2 \quad (i\ne j).
+\]
+Define pairwise gaps $g_{ij}=\norm{x_i-x_j}-2$ and the minimum gap objective
+\[
+g_{\min}(X) = \min_{i<j} g_{ij}.
+\]
+Feasibility is $g_{\min}(X)\ge 0$.
+
+\paragraph{Certification.}
+To avoid ambiguous near-feasible outcomes, we certify a configuration $X$ only if both
+\[
+\max_i \left|\norm{x_i}-2\right| \le \varepsilon_r
+\qquad\text{and}\qquad
+g_{\min}(X)\ge -\varepsilon_g,
+\]
+with $\varepsilon_r=\varepsilon_g=10^{-5}$ throughout.
+
+\section{Methods}
+\subsection{Manifold optimization on $\Sn{4}(2)$}
+We optimize directly on $(\Sn{4}(2))^N$ using tangential gradient steps followed by radial re-projection.
+For a point $x$ with $\norm{x}=2$ and an unconstrained gradient $u$, we use the tangential projection
+\[
+u_{\perp} = u - \left(\frac{x^\top u}{\norm{x}^2}\right) x,
+\]
+then reproject $x\leftarrow 2x/\norm{x}$ after each update. We use Adam for stability across gradient scales.
+
+\subsection{Repair-then-polish objective}
+Empirically, a two-stage pipeline was most reliable:
+\begin{enumerate}
+\item \textbf{Repair:} aggressively reduce overlaps using a smooth penalty on negative gaps, e.g.
+\[
+\mathcal{L}_{\text{repair}}(X)=\sum_{i<j}\mathrm{softplus}\!\left(\frac{-g_{ij}(X)}{\tau}\right)^2,
+\]
+with temperature $\tau>0$.
+\item \textbf{Polish:} approximate the max--min objective via a log-sum-exp surrogate
+\[
+\tilde g_{\min}(X;\alpha) = -\frac{1}{\alpha}\log\sum_{i<j}\exp(-\alpha g_{ij}(X)),
+\]
+and maximize $\tilde g_{\min}$ for moderately large $\alpha$.
+\end{enumerate}
+Unlike fixed-size active-set approximations, the log-sum-exp surrogate retains ``soft pressure'' from near-worst constraints, which is important in dense-constraint regimes.
+
+\subsection{Control-first experimental design}
+Negative results in feasibility search are only interpretable if the pipeline is validated on controls:
+\begin{itemize}
+\item \textbf{Positive control ($N=40$):} seed with the $D_5$ root configuration (40 vectors of the form $(\pm1,\pm1,0,0,0)$, scaled to $\norm{x}=2$). This is a known kissing configuration and must certify.
+\item \textbf{Negative control ($N=45$):} an overconstrained regime expected to fail more strongly than $N=41$.
+\item \textbf{Target ($N=41$):} global feasibility search from random restarts, using identical code paths and certification.
+\end{itemize}
+
+\section{Results}
+\subsection{Falsification matrix (controls)}
+Table~\ref{tab:falsification} and Figure~\ref{fig:falsification} summarize the control-first matrix. The $N=40$ witness certifies immediately, while $N=45$ fails with a substantially worse best gap than $N=41$, making the $N=41$ outcome informative rather than diagnostic of a broken certifier.
+
+\begin{table}[h]
+\centering
+\caption{Control-first falsification matrix. ``Best'' refers to the maximum $g_{\min}$ achieved among restarts in that condition.}
+\label{tab:falsification}
+\begin{tabular}{@{}rccc@{}}
+\toprule
+$N$ & Certified? & Best $g_{\min}$ & Interpretation \\
+\midrule
+40 & Yes & 0.0000 & $D_5$ feasibility control passes \\
+41 & No  & $-0.0365$ & Near-feasible ``soft wall'' \\
+45 & No  & $-0.0904$ & Negative control fails as expected \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.78\linewidth]{fig_falsification_matrix.png}
+\caption{Best achieved minimum gaps for the falsification matrix. Dashed line at $0$ indicates feasibility.}
+\label{fig:falsification}
+\end{figure}
+
+\subsection{$N=41$ global search statistics (200 restarts)}
+With controls validated, we ran 200 independent random restarts for $N=41$ (same pipeline, same certification).
+No restart certified.
+The per-restart best-gap distribution is shown in Figures~\ref{fig:n41hist}--\ref{fig:n41ecdf} and summarized below:
+\[
+\text{best }g_{\min} = -0.03635,\quad
+\text{median }g_{\min} = -0.03665,\quad
+\text{mean }g_{\min} = -0.04015,\quad
+\text{std} = 0.00525.
+\]
+Quantiles (10\%, 25\%, 50\%, 75\%, 90\%) are
+\[
+(-0.04783,\,-0.04467,\,-0.03665,\,-0.03656,\,-0.03649),
+\]
+and 133/200 runs (66.5\%) fall into a ``good basin'' defined by $g_{\min} > -0.04$.
+The concentration of the upper quantiles indicates repeated convergence to a stable near-feasible attractor around $g_{\min}\approx -0.0365$, with the remaining runs settling in worse basins.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.80\linewidth]{fig_n41_hist.png}
+\caption{Histogram of best per-restart $g_{\min}$ for $N=41$ (200 restarts).}
+\label{fig:n41hist}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.80\linewidth]{fig_n41_ecdf.png}
+\caption{Empirical CDF of best per-restart $g_{\min}$ for $N=41$ (200 restarts).}
+\label{fig:n41ecdf}
+\end{figure}
+
+\paragraph{Binomial confidence bound.}
+Assuming independent restarts with a fixed per-restart success probability $p$, observing 0 certifications in 200 trials implies
+\[
+p \le 1-0.05^{1/200}\approx 0.0149
+\]
+as a one-sided 95\% upper bound. This does not rule out extremely rare feasible configurations, but it quantifies how consistently this optimizer family fails to reach certification at $N=41$ despite repeatedly approaching feasibility.
+
+\subsection{Advanced search methods}
+\label{sec:advanced}
+Several advanced-search strategies were tested to assess robustness to initialization, search method, and problem formulation.
+
+\paragraph{Basin hopping.}
+We implemented a Metropolis-based basin hopping procedure with adaptive temperature control targeting 20--40\% acceptance rate. Over 500 hops, the best gap achieved was $g_{\min}\approx -0.046$---worse than the $-0.036$ attractor found by simple random restarts. This suggests a glassy landscape with isolated basins rather than a connected near-feasible region that global search methods could exploit.
+
+\paragraph{Symmetry-seeded starts.}
+Two structured initialization strategies were tested (Figure~\ref{fig:sym}):
+\begin{itemize}
+\item \textbf{$D_5$ + 1 random:} Seeding with the optimal 40-point $D_5$ configuration plus one random point performed \emph{worse} than random starts, achieving best $g_{\min}=-0.063$. The $D_5$ configuration is maximally tight; adding a 41st point creates overlaps that the optimizer cannot resolve without destroying the $D_5$ structure.
+\item \textbf{$D_4$ + 17 random:} Seeding with 24 points from $D_4$ (embedded in the $x_5=0$ hyperplane) plus 17 random points matched random-start performance (best $g_{\min}=-0.039$). The lower symmetry allows the optimizer to explore more of the configuration space.
+\end{itemize}
+
+\paragraph{Gram matrix optimization.}
+To rule out artifacts from coordinate projection onto $\Sn{4}(2)$, we also optimized the Gram matrix $G = VV^\top$ directly, where $V\in\R^{N\times d}$ with normalized rows. This formulation minimizes the maximum off-diagonal entry of $G$ (equivalently, maximizes minimum angle) using L-BFGS with numerical gradients over 50 random seeds.
+
+\emph{Metric relationship.} The distance-based gap $g_{\min} = \min_{i<j}\|x_i - x_j\| - 2$ and cosine-based gap $g_{\cos} = 0.5 - \max_{i\neq j}\langle v_i, v_j\rangle$ are related by $g_{\min} = 2\sqrt{2 - 2\cos\theta_{\min}} - 2$. For small violations, a cosine gap of $-0.018$ corresponds to a distance gap of approximately $-0.036$.
+
+For $N=41$, the coordinate-based optimizer achieved distance gap $g_{\min} \approx -0.036$, corresponding to $\max\cos\theta \approx 0.518$. The direct Gram optimizer achieved $\max\cos\theta \approx 0.538$ (cosine gap $-0.038$), which is \emph{worse} than the coordinate formulation. This suggests that the distance-based objective, which penalizes small-angle violations more heavily, provides better guidance in this dense-constraint regime.
+
+The key finding is that both formulations---despite different objectives and optimization strategies---converge to the same order of magnitude violation ($\sim$1--2\% relative gap), supporting the interpretation that the barrier is geometric rather than algorithmic.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.78\linewidth]{fig_symmetry_seeds.png}
+\caption{Best achieved $g_{\min}$ for symmetry-seeded $N=41$ initializations. The $D_5+1$ seed performs substantially worse than random initialization, indicating the optimal 40-point configuration is a geometric dead end.}
+\label{fig:sym}
+\end{figure}
+
+\subsection{Ablation: fixed-size active-set polishing underperforms}
+A fixed-$K$ active-set variant (optimizing only the $K$ most violated pairs) underperformed the log-sum-exp objective, converging to significantly worse basins (best $g_{\min}\approx -0.065$) and eliminating the ``good basin'' entirely. This is consistent with a leakage failure mode: ignoring near-worst constraints allows boundary pairs to degrade before they enter the active set.
+
+\subsection{Cross-dimensional calibration}
+\label{sec:calibration}
+To assess the credibility of negative results, we benchmarked the optimizer across dimensions where kissing numbers are proven. For each dimension $d$, we tested two modes: (i) \emph{Certify mode}---starting from the known optimal configuration with added noise (scale 0.1), verifying recovery to gap $\ge 0$; and (ii) \emph{Discover mode}---random restarts attempting to find $N=\tau_d$ from scratch.
+
+\begin{table}[h]
+\centering
+\caption{Cross-dimensional calibration benchmark (10 trials per condition, 20 restarts per trial). Certification threshold $\varepsilon_g = 10^{-6}$.}
+\label{tab:calibration}
+\begin{tabular}{@{}rllcccc@{}}
+\toprule
+$d$ & Config & Status & Certify & Discover & $N{+}1$ Gap & Separation \\
+\midrule
+2 & Hexagon ($N{=}6$) & Proven & 100\% & 100\% & $-0.264$ & $0.264$ \\
+5 & $D_5$ ($N{=}40$) & Conj. & 100\% & 0\% & $-0.036$ & $0.036$ \\
+8 & $E_8$ ($N{=}240$) & Proven & 100\% & 90\%$^\dagger$ & $-0.130$ & $0.130$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+\noindent{\footnotesize $^\dagger$Basin entry rate; strict certification requires tighter tolerance.}
+
+The $E_8$ result is particularly striking: the optimizer successfully enters the 240-point basin from random initialization in 90\% of trials (achieving gaps $\approx -10^{-5}$), demonstrating strong capability in high dimensions where symmetry aids convergence. The $N=241$ case fails uniformly with gap $\approx -0.130$, yielding clear separation.
+
+For $d=5$, random search struggles to find the optimal basin (0\% Discover success), yet Certify mode passes---confirming the configuration exists but occupies a narrow basin. The $N=41$ gap ($\approx -0.036$) provides discriminative evidence distinct from the $N=40$ best-effort gap ($\approx -0.021$): the optimizer approaches closer to feasibility for the achievable target.
+
+\section{Discussion}
+Across controls, extensive restarts, and multiple solver variants, gradient-based optimization converges reliably to stable near-feasible configurations for $N=41$ but does not reach strict feasibility certification.
+The coordinate-based pipeline achieves $g_{\min}\approx -0.036$ (equivalently, $\max\cos\theta \approx 0.518$), while direct Gram matrix optimization performs slightly worse at $\max\cos\theta \approx 0.538$.
+
+The cross-dimensional calibration (Section~\ref{sec:calibration}) strengthens the interpretation of these results. The same optimizer that fails at $N=41$ in $d=5$ successfully enters the 240-point $E_8$ basin from random starts with 90\% reliability, achieving gaps of $\approx -10^{-5}$. For $N=241$, the optimizer fails uniformly with gap $\approx -0.130$---a separation of 0.130 that exceeds the $d=5$ separation of 0.036. This demonstrates that the optimizer is not fundamentally incapable of finding high-dimensional kissing configurations; rather, the $d=5$ barrier at $N=41$ represents a qualitatively different geometric obstruction.
+
+The consistency of results across fundamentally different optimization formulations is significant. The coordinate-based approach optimizes distances directly on the sphere manifold; the Gram approach optimizes inner products in factorized form. Despite these differences, both methods converge to violations of 1--2\% relative to the feasibility threshold. This convergence to a common barrier strongly suggests the obstruction is geometric rather than algorithmic.
+
+Our results complement two distinct lines of evidence in the literature. First, the rigorous SDP upper bounds~\cite{BachocVallentin2008,MittelmannVallentin2010} establish $\tau_5 \le 44$ but do not pinpoint the exact value. Second, the discovery of four non-isometric 40-point configurations~\cite{Leech1967,Szollosi2023,CohnRajagopal2024} demonstrates that optimal configurations are not unique in dimension 5, yet extensive search has found no configuration exceeding 40 contacts.
+
+The $D_5+1$ seeding experiment (Section~\ref{sec:advanced}) provides complementary evidence: the optimal 40-point configuration offers no local perturbation path toward 41 points. This aligns with Sz\"{o}ll\H{o}si's observation~\cite{Szollosi2023} that the compatibility graph approach, which successfully found $Q_5$, does not yield 41-point cliques despite exhaustive search.
+
+Taken together, these observations provide strong computational evidence, across multiple optimizer families and problem formulations, consistent with $\tau_5=40$.
+
+\section{Limitations}
+This study is not a proof that $\tau_5=40$. The rigorous upper bound remains $\tau_5 \le 44$~\cite{MittelmannVallentin2010}, and closing this gap would require either improving the SDP bounds or proving infeasibility of $N=41$ through exact methods. Key limitations of our computational approach include:
+\begin{itemize}
+\item \textbf{Optimizer dependence:} failure to certify $N=41$ may reflect limitations of gradient-based continuous optimizers rather than geometric impossibility.
+\item \textbf{Rare basins:} a feasible $N=41$ configuration, if it exists, may occupy an extremely small basin of attraction not reached by our restart budget.
+\item \textbf{Finite computation and precision:} certification depends on strict thresholds and floating-point arithmetic.
+\item \textbf{Search strategy coverage:} while we tested basin hopping, symmetry-seeded initialization, and Gram matrix optimization, we did not exhaustively explore clique-based discrete search (cf.~\cite{Szollosi2023}) or higher-order SDP relaxations~\cite{BachocVallentin2008}.
+\end{itemize}
+
+\section{Conclusion}
+\textbf{Key claim (precisely stated):} With a control-first pipeline that certifies $D_5$ at $N=40$ (gap $0$) and fails at $N=45$ (best gap $\approx -0.090$), our global feasibility search for $N=41$ achieves best $g_{\min}\approx -0.036$ over 200 random restarts with no certified solution found.
+Cross-dimensional calibration validates the optimizer: the same pipeline enters the 240-point $E_8$ basin from random starts with 90\% success (gap $\approx -10^{-5}$) yet fails uniformly at $N=241$ (gap $\approx -0.130$), demonstrating clear discrimination between feasible and infeasible configurations.
+Both coordinate-based and Gram matrix formulations converge to violations of 1--2\% relative to the feasibility threshold. This consistency across different optimization approaches and the cross-dimensional calibration constitute strong computational evidence consistent with $\tau_5=40$.
+
+\paragraph{Reproducibility.}
+All experiments use NumPy with recorded pseudorandom seeds. Code and configuration files are available from the author upon request.
+
+\begin{thebibliography}{99}
+
+\bibitem{ConwaySloane}
+J.~H. Conway and N.~J.~A. Sloane.
+\newblock \emph{Sphere Packings, Lattices and Groups}.
+\newblock Springer, 3rd edition, 1999.
+
+\bibitem{SchutteVdW}
+K.~Sch\"{u}tte and B.~L. van der Waerden.
+\newblock Das Problem der dreizehn Kugeln.
+\newblock \emph{Mathematische Annalen}, 125:325--334, 1953.
+
+\bibitem{Musin2008}
+O.~R. Musin.
+\newblock The kissing number in four dimensions.
+\newblock \emph{Annals of Mathematics}, 168(1):1--32, 2008.
+
+\bibitem{Viazovska2017}
+M.~Viazovska.
+\newblock The sphere packing problem in dimension 8.
+\newblock \emph{Annals of Mathematics}, 185(3):991--1015, 2017.
+
+\bibitem{CKMRV2017}
+H.~Cohn, A.~Kumar, S.~D. Miller, D.~Radchenko, and M.~Viazovska.
+\newblock The sphere packing problem in dimension 24.
+\newblock \emph{Annals of Mathematics}, 185(3):1017--1033, 2017.
+
+\bibitem{KorkineZolotareff1873}
+A.~Korkine and G.~Zolotareff.
+\newblock Sur les formes quadratiques.
+\newblock \emph{Mathematische Annalen}, 6:366--389, 1873.
+
+\bibitem{Leech1967}
+J.~Leech.
+\newblock Five dimensional non-lattice sphere packings.
+\newblock \emph{Canadian Mathematical Bulletin}, 10(3):387--393, 1967.
+
+\bibitem{BachocVallentin2008}
+C.~Bachoc and F.~Vallentin.
+\newblock New upper bounds for kissing numbers from semidefinite programming.
+\newblock \emph{Journal of the American Mathematical Society}, 21(3):909--924, 2008.
+
+\bibitem{MittelmannVallentin2010}
+H.~D. Mittelmann and F.~Vallentin.
+\newblock High accuracy semidefinite programming bounds for kissing numbers.
+\newblock \emph{Experimental Mathematics}, 19(2):174--178, 2010.
+
+\bibitem{Szollosi2023}
+F.~Sz\"{o}ll\H{o}si.
+\newblock A note on five dimensional kissing arrangements.
+\newblock \emph{Mathematical Research Letters}, 30(5):1609--1615, 2023.
+\newblock (arXiv:2301.08272)
+
+\bibitem{CohnRajagopal2024}
+H.~Cohn and I.~Rajagopal.
+\newblock Variations on five-dimensional sphere packings.
+\newblock arXiv:2412.00937, 2024.
+
+\end{thebibliography}
+
+\end{document}

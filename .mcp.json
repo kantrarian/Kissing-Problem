@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "lean-lsp": {
+      "command": "uvx",
+      "args": ["lean-lsp-mcp"],
+      "env": {
+        "LEAN_PROJECT_PATH": "C:/v2_files/lean_proofs/KissingNumber",
+        "LEAN_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}

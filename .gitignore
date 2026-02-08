@@ -32,3 +32,9 @@ sprint520_bookend_controls.py
 
 # Claude local settings
 .claude/
+
+# Computational artifacts
+computational/__pycache__/
+computational/uni/
+computational/*.npy
+computational/*.csv

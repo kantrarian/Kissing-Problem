@@ -1,0 +1,23 @@
+{
+  "40": {
+    "N_target": 40,
+    "n_restarts": 1,
+    "certified_any": true,
+    "best_min_gap": 0.0,
+    "best_restart": 0
+  },
+  "41": {
+    "N_target": 41,
+    "n_restarts": 20,
+    "certified_any": false,
+    "best_min_gap": -0.03646530591151942,
+    "best_restart": 13
+  },
+  "45": {
+    "N_target": 45,
+    "n_restarts": 20,
+    "certified_any": false,
+    "best_min_gap": -0.09042081216278142,
+    "best_restart": 16
+  }
+}
