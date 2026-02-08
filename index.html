@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kissing Number Formalization in Lean 4</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-subtle: #1f6feb33;
+    --green: #3fb950;
+    --green-subtle: #23863633;
+    --yellow: #d29922;
+    --yellow-subtle: #bb800926;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --code-bg: #0d1117;
+    --header-bg: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, .mono {
+    font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+    font-size: 0.9em;
+  }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  /* Hero */
+  .hero {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 64px 0 48px;
+    text-align: center;
+  }
+  .hero h1 { font-size: 2.4em; font-weight: 700; margin-bottom: 12px; letter-spacing: -0.5px; }
+  .hero .subtitle { font-size: 1.15em; color: var(--text-muted); max-width: 640px; margin: 0 auto 28px; }
+  .hero .badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: 600;
+    border: 1px solid var(--border);
+  }
+  .badge.green  { background: var(--green-subtle);  border-color: #23863666; color: var(--green); }
+  .badge.yellow { background: var(--yellow-subtle); border-color: #bb800944; color: var(--yellow); }
+  .badge.blue   { background: var(--accent-subtle); border-color: #1f6feb55; color: var(--accent); }
+
+  /* Nav */
+  nav {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+  }
+  nav .container {
+    display: flex; gap: 24px; overflow-x: auto; padding-top: 0; padding-bottom: 0;
+  }
+  nav a {
+    padding: 12px 4px; color: var(--text-muted); font-size: 0.9em; font-weight: 500;
+    white-space: nowrap; border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  nav a:hover { color: var(--text); text-decoration: none; border-bottom-color: var(--border); }
+
+  /* Sections */
+  section { padding: 48px 0; border-bottom: 1px solid var(--border); }
+  section:last-child { border-bottom: none; }
+  h2 { font-size: 1.6em; margin-bottom: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  h3 { font-size: 1.2em; margin: 28px 0 12px; font-weight: 600; color: var(--accent); }
+  h4 { font-size: 1.05em; margin: 20px 0 8px; font-weight: 600; }
+  p, li { color: var(--text); margin-bottom: 12px; }
+  ul, ol { padding-left: 24px; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; transition: border-color 0.2s;
+  }
+  .card:hover { border-color: var(--accent); }
+  .card h4 { margin-top: 0; color: var(--text); }
+  .card p { font-size: 0.92em; color: var(--text-muted); margin-bottom: 0; }
+  .card .tag {
+    display: inline-block; font-size: 0.75em; font-weight: 600; padding: 2px 8px;
+    border-radius: 12px; margin-bottom: 8px;
+  }
+  .tag.complete { background: var(--green-subtle); color: var(--green); }
+  .tag.progress { background: var(--yellow-subtle); color: var(--yellow); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92em; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 600; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.5px; }
+  tr:hover td { background: #ffffff06; }
+  td code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); font-size: 0.9em; }
+
+  /* Code blocks */
+  pre {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 16px 20px; overflow-x: auto; margin: 16px 0; font-size: 0.88em; line-height: 1.7;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  .kw { color: var(--purple); }
+  .fn { color: var(--accent); }
+  .cm { color: var(--text-muted); font-style: italic; }
+  .str { color: var(--green); }
+  .num { color: #f0883e; }
+
+  /* Proof chain */
+  .proof-chain {
+    display: flex; flex-direction: column; gap: 0; margin: 20px 0;
+  }
+  .proof-step {
+    display: flex; align-items: flex-start; gap: 16px; padding: 16px 0;
+    border-left: 2px solid var(--border); margin-left: 12px; padding-left: 20px;
+    position: relative;
+  }
+  .proof-step::before {
+    content: ''; position: absolute; left: -7px; top: 20px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--surface); border: 2px solid var(--accent);
+  }
+  .proof-step.done::before { background: var(--green); border-color: var(--green); }
+  .proof-step.wip::before  { background: var(--yellow); border-color: var(--yellow); }
+  .proof-step .step-content { flex: 1; }
+  .proof-step .step-title { font-weight: 600; margin-bottom: 4px; }
+  .proof-step .step-detail { font-size: 0.9em; color: var(--text-muted); }
+
+  /* Equation blocks */
+  .eq-block {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; margin: 16px 0; text-align: center; font-size: 1.1em;
+    font-family: 'Georgia', 'Times New Roman', serif; font-style: italic;
+    letter-spacing: 0.3px;
+  }
+  .eq-block .label { font-size: 0.75em; color: var(--text-muted); font-style: normal; font-family: sans-serif; display: block; margin-top: 8px; }
+
+  /* Status indicators */
+  .status { display: inline-flex; align-items: center; gap: 5px; font-size: 0.85em; font-weight: 600; }
+  .status .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status.ok .dot { background: var(--green); }
+  .status.wip .dot { background: var(--yellow); }
+
+  /* Math */
+  .math { font-family: 'Georgia', 'Times New Roman', serif; font-style: italic; }
+  sub, sup { font-size: 0.75em; }
+
+  /* Dep graph */
+  .dep-graph {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 20px; margin: 16px 0; overflow-x: auto;
+  }
+  .dep-graph pre { background: none; border: none; padding: 0; margin: 0; color: var(--text-muted); }
+
+  /* Footer */
+  footer {
+    padding: 32px 0; text-align: center; color: var(--text-muted); font-size: 0.85em;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 1.8em; }
+    .hero { padding: 40px 0 32px; }
+    section { padding: 32px 0; }
+    h2 { font-size: 1.3em; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- HERO -->
+<!-- ============================================================ -->
+<header class="hero">
+  <div class="container">
+    <h1>Kissing Number Formalization</h1>
+    <p class="subtitle">
+      Formal verification of kissing number bounds in dimensions 3, 5, and 8
+      using Lean 4 and Mathlib4 &mdash; combining explicit root system witnesses
+      with Delsarte linear programming certificates.
+    </p>
+    <div class="badges">
+      <span class="badge green">K(3) &ge; 12 &check;</span>
+      <span class="badge green">40 &le; K(5) &le; 48 &check;</span>
+      <span class="badge yellow">K(8) = 240 &nbsp;(1 sorry)</span>
+      <span class="badge blue">Lean 4 + Mathlib4</span>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================ -->
+<!-- NAV -->
+<!-- ============================================================ -->
+<nav>
+  <div class="container">
+    <a href="#overview">Overview</a>
+    <a href="#math">Mathematics</a>
+    <a href="#dim3">Dim 3</a>
+    <a href="#dim5">Dim 5</a>
+    <a href="#dim8">Dim 8</a>
+    <a href="#psd">PSD Proofs</a>
+    <a href="#files">File Map</a>
+    <a href="#status">Status</a>
+  </div>
+</nav>
+
+<!-- ============================================================ -->
+<!-- OVERVIEW -->
+<!-- ============================================================ -->
+<section id="overview">
+<div class="container">
+  <h2>Project Overview</h2>
+  <p>
+    The <strong>kissing number</strong> <span class="math">K(d)</span> is the maximum number of
+    non-overlapping unit spheres that can simultaneously touch a central unit sphere in
+    <span class="math">d</span>-dimensional Euclidean space. This project provides
+    machine-checked proofs of kissing number bounds using the
+    <a href="https://leanprover.github.io/">Lean 4</a> proof assistant with the
+    <a href="https://leanprover-community.github.io/mathlib4_docs/">Mathlib4</a> library.
+  </p>
+
+  <h3>What is Proved</h3>
+  <div class="card-grid">
+    <div class="card">
+      <span class="tag complete">COMPLETE</span>
+      <h4>K(3) &ge; 12</h4>
+      <p>Lower bound via the cuboctahedron (D<sub>3</sub> root system). 12 explicit unit vectors with pairwise distances &ge; 2.</p>
+    </div>
+    <div class="card">
+      <span class="tag complete">COMPLETE</span>
+      <h4>40 &le; K(5) &le; 48</h4>
+      <p>Lower bound via D<sub>5</sub> lattice roots (40 vectors). Upper bound via Delsarte LP with certificate <span class="math">f(t) = (t+5/7)&sup2;(t+1/7)&sup2;(t&minus;1/2)</span>. All PSD conditions fully proved.</p>
+    </div>
+    <div class="card">
+      <span class="tag progress">1 SORRY</span>
+      <h4>K(8) = 240</h4>
+      <p>Lower bound via E<sub>8</sub> root system (240 vectors). Upper bound via Delsarte LP. PSD proved for k=1&ndash;5; k=6 feature map in progress.</p>
+    </div>
+  </div>
+
+  <h3>Proof Architecture</h3>
+  <p>Each result combines two independent proof strategies:</p>
+  <ul>
+    <li><strong>Lower bounds</strong> &mdash; Construct an explicit kissing configuration from a root system (D<sub>3</sub>, D<sub>5</sub>, or E<sub>8</sub>) and verify all norm and distance constraints.</li>
+    <li><strong>Upper bounds</strong> &mdash; Apply the Delsarte linear programming bound: find a certificate polynomial whose Gegenbauer expansion yields the desired bound, then verify positive semidefiniteness (PSD) of each Gegenbauer coefficient via trace-free tensor feature maps.</li>
+  </ul>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- MATHEMATICS -->
+<!-- ============================================================ -->
+<section id="math">
+<div class="container">
+  <h2>Mathematical Background</h2>
+
+  <h3>Kissing Configuration</h3>
+  <p>
+    A <strong>kissing configuration</strong> of size <span class="math">N</span> in dimension <span class="math">d</span>
+    is a set of <span class="math">N</span> points on the sphere of radius 2 in <span class="math">&reals;<sup>d</sup></span>
+    with pairwise distances at least 2. In Lean:
+  </p>
+  <pre><code><span class="kw">def</span> <span class="fn">IsKissingConfiguration</span> (d N : &naturals;) (X : Fin N &rarr; EuclideanSpace &reals; (Fin d)) : Prop :=
+  (&forall; i, &Vert;X i&Vert; = 2) &and; (&forall; i j, i &ne; j &rarr; &Vert;X i - X j&Vert; &ge; 2)</code></pre>
+  <p>
+    Equivalently (after rescaling by 1/2), this is <span class="math">N</span> unit vectors with pairwise inner products &le; 1/2.
+    The kissing number <span class="math">K(d)</span> is defined as the supremum over all such <span class="math">N</span>:
+  </p>
+  <pre><code><span class="kw">noncomputable def</span> <span class="fn">K</span> (n : &naturals;) : WithTop &naturals; :=
+  sSup ((&lambda; N &Rightarrow; (N : WithTop &naturals;)) '' admissible n)</code></pre>
+
+  <h3>Delsarte Linear Programming Bound</h3>
+  <p>
+    The Delsarte bound provides upper bounds on <span class="math">K(d)</span>. Given a polynomial
+    <span class="math">f(t) = &sum;<sub>k</sub> c<sub>k</sub> P<sub>k</sub><sup>(d)</sup>(t)</span>
+    expanded in the normalized Gegenbauer basis where:
+  </p>
+  <ol>
+    <li><span class="math">f(t) &le; 0</span> for all <span class="math">t &isin; [&minus;1, 1/2]</span> &nbsp;(the feasible region for inner products)</li>
+    <li>All coefficients <span class="math">c<sub>k</sub> &ge; 0</span> for <span class="math">k &ge; 1</span></li>
+    <li><span class="math">c<sub>0</sub> &gt; 0</span></li>
+    <li><strong>PSD condition:</strong> For any unit vectors <span class="math">u<sub>1</sub>, &hellip;, u<sub>N</sub></span>,
+      <span class="math">&sum;<sub>i,j</sub> P<sub>k</sub>(&langle;u<sub>i</sub>, u<sub>j</sub>&rangle;) &ge; 0</span> for each <span class="math">k &ge; 1</span></li>
+  </ol>
+  <p>Then <span class="math">K(d) &le; f(1)/c<sub>0</sub></span>.</p>
+
+  <h3>Gegenbauer Polynomials</h3>
+  <p>
+    The Gegenbauer (ultraspherical) polynomials <span class="math">C<sub>k</sub><sup>&lambda;</sup>(t)</span>
+    with parameter <span class="math">&lambda; = (d&minus;2)/2</span> are normalized so that
+    <span class="math">P<sub>k</sub>(1) = 1</span>. For dimension 5 (<span class="math">&lambda; = 3/2</span>):
+  </p>
+  <pre><code><span class="kw">noncomputable def</span> <span class="fn">P5</span> : Fin 6 &rarr; &reals; &rarr; &reals;
+  | 0, _ =&gt; 1
+  | 1, t =&gt; t
+  | 2, t =&gt; (5 * t ^ 2 - 1) / 4
+  | 3, t =&gt; (7 * t ^ 3 - 3 * t) / 4
+  | 4, t =&gt; (21 * t ^ 4 - 14 * t ^ 2 + 1) / 8
+  | 5, t =&gt; (33 * t ^ 5 - 30 * t ^ 3 + 5 * t) / 8</code></pre>
+  <p>For dimension 8 (<span class="math">&lambda; = 3</span>), P<sub>8</sub> ranges from degree 0 to 6.</p>
+
+  <h3>PSD via Feature Maps</h3>
+  <p>
+    The key insight: if there exists a <strong>feature map</strong>
+    <span class="math">&phi;<sub>k</sub> : S<sup>d&minus;1</sup> &rarr; &reals;<sup>m</sup></span> satisfying the
+    <strong>kernel identity</strong>
+  </p>
+  <div class="eq-block">
+    &sum;<sub>p</sub> &phi;<sub>k</sub>(x, p) &middot; &phi;<sub>k</sub>(y, p) = c<sub>k</sub> &middot; P<sub>k</sub>(&langle;x, y&rangle;)
+    <span class="label">Feature Map Kernel Identity</span>
+  </div>
+  <p>
+    then the PSD condition follows because the double sum decomposes as a sum of squares:
+  </p>
+  <div class="eq-block">
+    &sum;<sub>i,j</sub> P<sub>k</sub>(&langle;u<sub>i</sub>, u<sub>j</sub>&rangle;)
+    = c<sub>k</sub><sup>&minus;1</sup> &middot; &sum;<sub>p</sub> (&sum;<sub>i</sub> &phi;<sub>k</sub>(u<sub>i</sub>, p))&sup2;
+    &ge; 0
+    <span class="label">PSD by Sum-of-Squares Decomposition</span>
+  </div>
+  <p>
+    The feature maps are <strong>trace-free moment tensors</strong>. For degree <span class="math">k</span>,
+    the raw moment tensor <span class="math">A<sub>k</sub>(x) = x<sub>i<sub>1</sub></sub> &hellip; x<sub>i<sub>k</sub></sub></span>
+    is corrected by delta-function terms (B<sub>k</sub>, C<sub>k</sub>, &hellip;) to produce a trace-free tensor:
+  </p>
+  <div class="eq-block">
+    &phi;<sub>k</sub> = A<sub>k</sub> &minus; &alpha; B<sub>k</sub> + &beta; C<sub>k</sub> &minus; &hellip;
+    <span class="label">Trace-Free Tensor Decomposition</span>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DIMENSION 3 -->
+<!-- ============================================================ -->
+<section id="dim3">
+<div class="container">
+  <h2>Dimension 3: K(3) &ge; 12</h2>
+
+  <p>
+    The cuboctahedron (equivalently, the D<sub>3</sub> root system) provides 12 points
+    in <span class="math">&reals;&sup3;</span> forming a valid kissing configuration. The 12 points
+    are all permutations of <span class="math">(&pm;1, &pm;1, 0)</span>.
+  </p>
+
+  <h3>Lean Formalization</h3>
+  <p>
+    File <code>D3.lean</code> defines each of the 12 vectors explicitly, proves each has norm 2,
+    and verifies all <span class="math">C(12,2) = 66</span> pairwise distances are &ge; 2.
+    The proof uses inner product expansion via <code>PiLp.inner_apply</code> and sparse-sum lemmas.
+  </p>
+  <pre><code><span class="cm">-- Main theorem (D3.lean)</span>
+<span class="kw">theorem</span> <span class="fn">exists_kissing_12</span> :
+    &exist; X : Fin 12 &rarr; EuclideanSpace &reals; (Fin 3),
+      IsKissingConfiguration 3 12 X</code></pre>
+  <p><span class="status ok"><span class="dot"></span> Complete &mdash; 0 sorry</span></p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DIMENSION 5 -->
+<!-- ============================================================ -->
+<section id="dim5">
+<div class="container">
+  <h2>Dimension 5: 40 &le; K(5) &le; 48</h2>
+
+  <h3>Lower Bound: K(5) &ge; 40</h3>
+  <p>
+    The D<sub>5</sub> lattice root system provides 40 vectors: all permutations of
+    <span class="math">(&pm;1, &pm;1, 0, 0, 0)</span> in <span class="math">&reals;&sup5;</span>.
+    File <code>D5.lean</code> defines these explicitly and verifies the kissing configuration conditions.
+  </p>
+  <pre><code><span class="kw">theorem</span> <span class="fn">exists_kissing_40</span> :
+    &exist; X : Fin 40 &rarr; EuclideanSpace &reals; (Fin 5),
+      IsKissingConfiguration 5 40 X</code></pre>
+
+  <h3>Upper Bound: K(5) &le; 48</h3>
+  <p>
+    The Delsarte LP bound uses the certificate polynomial:
+  </p>
+  <div class="eq-block">
+    f(t) = (t + 5/7)&sup2; (t + 1/7)&sup2; (t &minus; 1/2)
+    <span class="label">Certificate polynomial for K(5)</span>
+  </div>
+
+  <h4>Certificate Properties</h4>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Lean Theorem</th></tr>
+    <tr><td>f(t) &le; 0 on [&minus;1, 1/2]</td><td>Squares &ge; 0, (t&minus;1/2) &le; 0</td><td><code>k5_cert_nonpos</code></td></tr>
+    <tr><td>f(1) / c<sub>0</sub></td><td>48</td><td><code>k5_bound_value</code></td></tr>
+    <tr><td>Gegenbauer expansion</td><td>f = &sum; c<sub>k</sub> P<sub>5,k</sub></td><td><code>k5_expansion</code></td></tr>
+    <tr><td>All c<sub>k</sub> &ge; 0 (k &ge; 1)</td><td>&check;</td><td><code>k5_coeff_pos</code></td></tr>
+    <tr><td>c<sub>0</sub> &gt; 0</td><td>96/2401</td><td><code>k5_coeff_zero_pos</code></td></tr>
+  </table>
+
+  <h4>Gegenbauer Coefficients</h4>
+  <table>
+    <tr><th>k</th><th>c<sub>k</sub></th><th>Feature Map Constant</th></tr>
+    <tr><td>0</td><td>96 / 2401</td><td>&mdash;</td></tr>
+    <tr><td>1</td><td>1412 / 7203</td><td>1 (trivial: Gram matrix)</td></tr>
+    <tr><td>2</td><td>424 / 1029</td><td>4/5</td></tr>
+    <tr><td>3</td><td>2136 / 3773</td><td>4/7</td></tr>
+    <tr><td>4</td><td>68 / 147</td><td>8/21</td></tr>
+    <tr><td>5</td><td>8 / 33</td><td>8/33</td></tr>
+  </table>
+
+  <h4>PSD Proofs for K(5)</h4>
+  <p>All five PSD conditions are fully proved via trace-free tensor feature maps:</p>
+  <table>
+    <tr><th>k</th><th>Feature Map</th><th>&phi;<sub>k</sub> Definition</th><th>Kernel</th><th>File</th></tr>
+    <tr>
+      <td>1</td><td>Inner product (direct)</td>
+      <td>&mdash;</td>
+      <td><code>P5_sum_nonneg_k1</code></td>
+      <td><code>PSD5.lean</code></td>
+    </tr>
+    <tr>
+      <td>2</td><td>Trace-free 2-tensor</td>
+      <td>x<sub>a</sub>x<sub>b</sub> &minus; &delta;<sub>ab</sub>/5</td>
+      <td>(4/5) P<sub>5,2</sub></td>
+      <td><code>PSD5.lean</code></td>
+    </tr>
+    <tr>
+      <td>3</td><td>Trace-free 3-tensor</td>
+      <td>x<sub>a</sub>x<sub>b</sub>x<sub>c</sub> &minus; (1/7) B<sub>3</sub></td>
+      <td>(4/7) P<sub>5,3</sub></td>
+      <td><code>PSD5.lean</code></td>
+    </tr>
+    <tr>
+      <td>4</td><td>Trace-free 4-tensor</td>
+      <td>A<sub>4</sub> &minus; (1/9) B<sub>4</sub> + (1/63) C<sub>4</sub></td>
+      <td>(8/21) P<sub>5,4</sub></td>
+      <td><code>PSD4_d5_CrossTerms.lean</code></td>
+    </tr>
+    <tr>
+      <td>5</td><td>Trace-free 5-tensor</td>
+      <td>A<sub>5</sub> &minus; (1/11) B<sub>5</sub> + (1/99) C<sub>5</sub></td>
+      <td>(8/33) P<sub>5,5</sub></td>
+      <td><code>PSD5_d5_CrossTerms.lean</code></td>
+    </tr>
+  </table>
+
+  <pre><code><span class="cm">-- Main combined theorem (LP_K5_48.lean)</span>
+<span class="kw">theorem</span> <span class="fn">K5_bounds</span> : (40 : WithTop &naturals;) &le; K 5 &and; K 5 &le; 48</code></pre>
+  <p><span class="status ok"><span class="dot"></span> Complete &mdash; 0 sorry</span></p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- DIMENSION 8 -->
+<!-- ============================================================ -->
+<section id="dim8">
+<div class="container">
+  <h2>Dimension 8: K(8) = 240</h2>
+
+  <h3>Lower Bound: K(8) &ge; 240</h3>
+  <p>
+    The E<sub>8</sub> root system provides 240 vectors in <span class="math">&reals;&sup8;</span>.
+    These are the 112 vectors of form <span class="math">(&pm;1, &pm;1, 0<sup>6</sup>)</span> (permutations)
+    plus the 128 half-integer vectors <span class="math">(&pm;1/2)<sup>8</sup></span> with even parity.
+    File <code>Witness/E8.lean</code> uses computable helpers and <code>native_decide</code> to verify all
+    <span class="math">C(240,2) = 28{,}680</span> distance constraints.
+  </p>
+  <pre><code><span class="kw">theorem</span> <span class="fn">exists_kissing_240</span> :
+    &exist; X : Fin 240 &rarr; EuclideanSpace &reals; (Fin 8),
+      IsKissingConfiguration 8 240 X</code></pre>
+
+  <h3>Upper Bound: K(8) &le; 240</h3>
+  <p>The Delsarte LP bound uses the certificate polynomial:</p>
+  <div class="eq-block">
+    g(t) = (t + 1)(t + 1/2)&sup2; t&sup2; (t &minus; 1/2)
+    <span class="label">Certificate polynomial for K(8)</span>
+  </div>
+
+  <h4>Certificate Properties</h4>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Lean Theorem</th></tr>
+    <tr><td>g(t) &le; 0 on [&minus;1, 1/2]</td><td>All factors nonneg except (t&minus;1/2)</td><td><code>e8_cert_nonpos</code></td></tr>
+    <tr><td>g(1) / c<sub>0</sub></td><td>240</td><td><code>e8_bound_value</code></td></tr>
+    <tr><td>Gegenbauer expansion</td><td>g = &sum; c<sub>k</sub> P<sub>8,k</sub></td><td><code>e8_expansion</code></td></tr>
+    <tr><td>All c<sub>k</sub> &ge; 0 (k &ge; 1)</td><td>&check;</td><td><code>e8_coeff_pos</code></td></tr>
+    <tr><td>c<sub>0</sub> &gt; 0</td><td>3/320</td><td><code>e8_coeff_zero_pos</code></td></tr>
+  </table>
+
+  <h4>PSD Status for K(8)</h4>
+  <table>
+    <tr><th>k</th><th>Feature Map</th><th>Kernel Constant</th><th>Status</th><th>File</th></tr>
+    <tr><td>1</td><td>Inner product</td><td>1</td><td><span class="status ok"><span class="dot"></span> Proved</span></td><td><code>PSD.lean</code></td></tr>
+    <tr><td>2</td><td>Trace-free 2-tensor</td><td>7/8</td><td><span class="status ok"><span class="dot"></span> Proved</span></td><td><code>PSD.lean</code></td></tr>
+    <tr><td>3</td><td>Trace-free 3-tensor</td><td>7/10</td><td><span class="status ok"><span class="dot"></span> Proved</span></td><td><code>PSD.lean</code></td></tr>
+    <tr><td>4</td><td>Trace-free 4-tensor</td><td>21/40</td><td><span class="status ok"><span class="dot"></span> Proved</span></td><td><code>PSD4CrossTerms.lean</code></td></tr>
+    <tr><td>5</td><td>Trace-free 5-tensor</td><td>3/8</td><td><span class="status ok"><span class="dot"></span> Proved</span></td><td><code>PSD5CrossTerms.lean</code></td></tr>
+    <tr><td>6</td><td>Trace-free 6-tensor</td><td>231/896</td><td><span class="status wip"><span class="dot"></span> In progress</span></td><td><code>PSD6CrossTerms.lean</code></td></tr>
+  </table>
+
+  <pre><code><span class="cm">-- Main theorem (LP_K8_240.lean)</span>
+<span class="kw">theorem</span> <span class="fn">K8_eq_240</span> : K 8 = 240 :=
+  le_antisymm K8_le_240 two_forty_le_K8</code></pre>
+  <p><span class="status wip"><span class="dot"></span> 1 sorry remaining &mdash; k=6 PSD feature map</span></p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- PSD PROOFS -->
+<!-- ============================================================ -->
+<section id="psd">
+<div class="container">
+  <h2>PSD Feature Map Proofs &mdash; Deep Dive</h2>
+
+  <p>
+    The most technically demanding component is proving the kernel identities for the
+    trace-free tensor feature maps. Each degree <span class="math">k</span> requires expanding
+    the product <span class="math">&phi;<sub>k</sub>(x)&middot;&phi;<sub>k</sub>(y)</span>,
+    summing over all tensor indices, and matching the result against the Gegenbauer polynomial.
+  </p>
+
+  <h3>General Framework</h3>
+  <pre><code><span class="cm">-- Generic PSD from feature map kernel (PSD5.lean)</span>
+<span class="kw">theorem</span> <span class="fn">psd_of_kernel_5</span> {&iota; : Type*} [Fintype &iota;] {k : Fin 6}
+    (c : &reals;) (hc : 0 &lt; c)
+    (&phi; : EuclideanSpace &reals; (Fin 5) &rarr; &iota; &rarr; &reals;)
+    (h&phi; : &forall; x y, &Vert;x&Vert; = 1 &rarr; &Vert;y&Vert; = 1 &rarr;
+      &sum; p, &phi; x p * &phi; y p = c * P5 k &langle;x, y&rangle;)
+    (hunit : &forall; i, &Vert;u i&Vert; = 1) :
+    0 &le; &sum; i, &sum; j, P5 k &langle;u i, u j&rangle;</code></pre>
+
+  <h3>Cross-Term Methodology</h3>
+  <p>
+    For degree <span class="math">k</span>, the feature map <span class="math">&phi;<sub>k</sub> = A &minus; &alpha;B + &beta;C &minus; &hellip;</span>
+    expands into cross-term products. For example, for k=4:
+  </p>
+  <div class="eq-block">
+    &sum;<sub>p</sub> &phi;<sub>4</sub>(x)&phi;<sub>4</sub>(y) =
+    AA &minus; (2/9) AB + (2/63) AC + (1/81) BB &minus; (2/567) BC + (1/3969) CC
+    <span class="label">Cross-term expansion for k=4, d=5</span>
+  </div>
+
+  <h4>Cross-Term Values: k=4, d=5</h4>
+  <table>
+    <tr><th>Cross-term</th><th>Value</th><th>Proof Technique</th></tr>
+    <tr><td>&sum; AA</td><td>s<sup>4</sup></td><td>Factor quad-sum via <code>conv</code> peeling</td></tr>
+    <tr><td>&sum; AB</td><td>6s<sup>2</sup></td><td>Delta collapse + triple-sum factoring</td></tr>
+    <tr><td>&sum; AC</td><td>3</td><td>Norm identity &sum; x<sub>a</sub><sup>2</sup> = 1</td></tr>
+    <tr><td>&sum; BB</td><td>54s<sup>2</sup> + 6</td><td>AC-normalization + mixed factoring</td></tr>
+    <tr><td>&sum; BC</td><td>42</td><td>Delta collapse + Fin 5 cardinality</td></tr>
+    <tr><td>&sum; CC</td><td>105</td><td>Pure delta products, <code>norm_num</code></td></tr>
+  </table>
+  <p>Assembles to: s<sup>4</sup> &minus; (2/3) s<sup>2</sup> + 1/21 = (8/21) P<sub>5,4</sub>(s) &check;</p>
+
+  <h4>Cross-Term Values: k=5, d=5</h4>
+  <table>
+    <tr><th>Cross-term</th><th>Value</th><th>Proof Technique</th></tr>
+    <tr><td>&sum; AA</td><td>s<sup>5</sup></td><td>Five-fold <code>conv</code> peeling</td></tr>
+    <tr><td>&sum; AB</td><td>10 s<sup>3</sup></td><td>Delta collapse + <code>factor4</code></td></tr>
+    <tr><td>&sum; AC</td><td>15 s</td><td>Double delta collapse + triple-sum factoring</td></tr>
+    <tr><td>&sum; BB</td><td>110 s<sup>3</sup> + 30 s</td><td>B5a/B5b decomposition: 32 s<sup>3</sup> + 2&times;(12 s<sup>3</sup>+12 s) + (54 s<sup>3</sup>+6 s)</td></tr>
+    <tr><td>&sum; BC</td><td>270 s</td><td>B5 symmetry + C5a-e group reduction via swap equivalences</td></tr>
+    <tr><td>&sum; CC</td><td>945 s</td><td>C5a-e decomposition: 5&times;105 s + 20&times;21 s via <code>Fintype.sum_equiv</code></td></tr>
+  </table>
+  <p>Assembles to: s<sup>5</sup> &minus; (10/11) s<sup>3</sup> + (5/33) s = (8/33) P<sub>5,5</sub>(s) &check;</p>
+
+  <h3>Key Tactic Patterns</h3>
+  <pre><code><span class="cm">-- 1. Unfold definitions and distribute over sums</span>
+<span class="kw">simp</span> <span class="kw">only</span> [A4, B4, C4]
+<span class="kw">simp_rw</span> [Fintype.sum_prod_type]
+<span class="kw">simp_rw</span> [mul_add, Finset.sum_add_distrib]
+
+<span class="cm">-- 2. Collapse Kronecker deltas</span>
+<span class="kw">simp</span> <span class="kw">only</span> [ite_mul, mul_ite, mul_zero, zero_mul, mul_one]
+<span class="kw">simp</span> <span class="kw">only</span> [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+
+<span class="cm">-- 3. AC-normalize products, then factor multi-sums</span>
+<span class="kw">simp</span> <span class="kw">only</span> [mul_assoc, mul_comm, mul_left_comm]
+<span class="kw">simp_rw</span> [kA, factor3, &larr; hs]
+
+<span class="cm">-- 4. Substitute ∑ x²=1 and ∑ xy=s, then close with ring</span>
+<span class="kw">rw</span> [hxn, hyn, &larr; hs]; <span class="kw">ring</span></code></pre>
+
+  <h3>BB and CC Decompositions (k=5)</h3>
+  <p>
+    For degree 5, the B<sub>5</sub> term has 10 delta-function terms. The product B<sub>5</sub>&times;B<sub>5</sub>
+    yields 100 sub-products. To manage this complexity, B<sub>5</sub> is split into:
+  </p>
+  <ul>
+    <li><strong>B5a</strong>: 4 terms where the delta involves the first index position</li>
+    <li><strong>B5b</strong>: 6 terms where the delta is among the remaining four positions</li>
+  </ul>
+  <p>
+    This gives BB = B5aa + 2&times;B5ab + B5bb, each proved independently.
+    Similarly, C<sub>5</sub> splits into 5 groups (C5a through C5e) by which index is &ldquo;unpaired.&rdquo;
+    Swap equivalences (<code>Fintype.sum_equiv</code>) reduce all 25 CC sub-sums to just two base cases:
+    C5aa = 105 s and C5ab = 21 s.
+  </p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- FILE MAP -->
+<!-- ============================================================ -->
+<section id="files">
+<div class="container">
+  <h2>File Map</h2>
+
+  <h3>Core Infrastructure</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th></tr>
+    <tr><td><code>Defs.lean</code></td><td><code>IsKissingConfiguration</code>: all points norm 2, pairwise distance &ge; 2</td></tr>
+    <tr><td><code>Lemmas.lean</code></td><td>Shared lemmas: sparse sums, inner product &harr; distance bridge</td></tr>
+    <tr><td><code>K.lean</code></td><td><code>K n</code>: kissing number as supremum in &naturals;&infin;; <code>le_K_of_exists</code></td></tr>
+    <tr><td><code>Gegenbauer.lean</code></td><td>P<sub>8,k</sub>(t) for k=0&hellip;6 (&lambda;=3, dimension 8)</td></tr>
+    <tr><td><code>Gegenbauer5.lean</code></td><td>P<sub>5,k</sub>(t) for k=0&hellip;5 (&lambda;=3/2, dimension 5)</td></tr>
+    <tr><td><code>Delsarte.lean</code></td><td>Abstract Delsarte bound theorem for d=8</td></tr>
+    <tr><td><code>Delsarte5.lean</code></td><td>Abstract Delsarte bound theorem for d=5</td></tr>
+    <tr><td><code>Summary.lean</code></td><td>Top-level re-exports of all results</td></tr>
+  </table>
+
+  <h3>Lower Bound Witnesses</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th><th>Points</th></tr>
+    <tr><td><code>D3.lean</code></td><td>Cuboctahedron witness for K(3) &ge; 12</td><td>12</td></tr>
+    <tr><td><code>D5.lean</code></td><td>D<sub>5</sub> root system witness for K(5) &ge; 40</td><td>40</td></tr>
+    <tr><td><code>Witness/E8.lean</code></td><td>E<sub>8</sub> root system witness for K(8) &ge; 240</td><td>240</td></tr>
+  </table>
+
+  <h3>PSD Feature Map Proofs</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th><th>Lines</th><th>Status</th></tr>
+    <tr><td><code>PSD5.lean</code></td><td>PSD for d=5: k=1,2,3 inline + k=4,5 via imports</td><td>~260</td><td><span class="status ok"><span class="dot"></span> Complete</span></td></tr>
+    <tr><td><code>PSD4_d5_CrossTerms.lean</code></td><td>k=4 feature map for d=5: &phi;<sub>4</sub> kernel = (8/21) P<sub>5,4</sub></td><td>~340</td><td><span class="status ok"><span class="dot"></span> Complete</span></td></tr>
+    <tr><td><code>PSD5_d5_CrossTerms.lean</code></td><td>k=5 feature map for d=5: &phi;<sub>5</sub> kernel = (8/33) P<sub>5,5</sub></td><td>~850</td><td><span class="status ok"><span class="dot"></span> Complete</span></td></tr>
+    <tr><td><code>PSD.lean</code></td><td>PSD for d=8: k=1,2,3 inline + k=4,5,6 via imports</td><td>~270</td><td><span class="status wip"><span class="dot"></span> 1 sorry (k=6)</span></td></tr>
+    <tr><td><code>PSD4CrossTerms.lean</code></td><td>k=4 feature map for d=8: &phi;<sub>4</sub> kernel = (21/40) P<sub>8,4</sub></td><td>~340</td><td><span class="status ok"><span class="dot"></span> Complete</span></td></tr>
+    <tr><td><code>PSD5CrossTerms.lean</code></td><td>k=5 feature map for d=8: &phi;<sub>5</sub> kernel = (3/8) P<sub>8,5</sub></td><td>~850</td><td><span class="status ok"><span class="dot"></span> Complete</span></td></tr>
+    <tr><td><code>PSD6CrossTerms.lean</code></td><td>k=6 feature map for d=8: 4/10 cross-terms proved</td><td>~600</td><td><span class="status wip"><span class="dot"></span> In progress</span></td></tr>
+  </table>
+
+  <h3>Certificates</h3>
+  <table>
+    <tr><th>File</th><th>Purpose</th><th>Status</th></tr>
+    <tr><td><code>Certificates/LP_K5_48.lean</code></td><td>K(5) &le; 48 via f(t) = (t+5/7)&sup2;(t+1/7)&sup2;(t&minus;1/2); also K5_bounds</td><td><span class="status ok"><span class="dot"></span> Complete</span></td></tr>
+    <tr><td><code>Certificates/LP_K8_240.lean</code></td><td>K(8) &le; 240 via g(t) = (t+1)(t+1/2)&sup2;t&sup2;(t&minus;1/2); also K8_eq_240</td><td><span class="status wip"><span class="dot"></span> 1 sorry (PSD k=6)</span></td></tr>
+  </table>
+
+  <h3>Dependency Graph</h3>
+  <div class="dep-graph">
+    <pre>Summary.lean
+ ├── D3.lean ──────────────────── Defs.lean, Lemmas.lean
+ ├── D5.lean ──────────────────── Defs.lean, Lemmas.lean
+ ├── Witness/E8.lean ──────────── Defs.lean, Lemmas.lean
+ ├── K.lean ───────────────────── Defs.lean
+ ├── Certificates/LP_K5_48.lean
+ │    ├── Delsarte5.lean ──────── Gegenbauer5.lean
+ │    ├── K.lean
+ │    ├── D5.lean
+ │    └── PSD5.lean
+ │         ├── Gegenbauer5.lean
+ │         ├── PSD4_d5_CrossTerms.lean ── Gegenbauer5.lean
+ │         └── PSD5_d5_CrossTerms.lean ── Gegenbauer5.lean
+ └── Certificates/LP_K8_240.lean
+      ├── Delsarte.lean ───────── Gegenbauer.lean
+      ├── K.lean
+      ├── Witness/E8.lean
+      └── PSD.lean
+           ├── Gegenbauer.lean
+           ├── PSD4CrossTerms.lean ─────── Gegenbauer.lean
+           ├── PSD5CrossTerms.lean ─────── Gegenbauer.lean
+           └── PSD6CrossTerms.lean ─────── Gegenbauer.lean  ⚠ sorry</pre>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- STATUS -->
+<!-- ============================================================ -->
+<section id="status">
+<div class="container">
+  <h2>Current Status</h2>
+
+  <table>
+    <tr><th>Result</th><th>Status</th><th>Sorry Count</th><th>Key Theorems</th></tr>
+    <tr>
+      <td>K(3) &ge; 12</td>
+      <td><span class="status ok"><span class="dot"></span> Complete</span></td>
+      <td>0</td>
+      <td><code>exists_kissing_12</code>, <code>twelve_le_K3</code></td>
+    </tr>
+    <tr>
+      <td>K(5) &ge; 40</td>
+      <td><span class="status ok"><span class="dot"></span> Complete</span></td>
+      <td>0</td>
+      <td><code>exists_kissing_40</code>, <code>forty_le_K5</code></td>
+    </tr>
+    <tr>
+      <td>K(5) &le; 48</td>
+      <td><span class="status ok"><span class="dot"></span> Complete</span></td>
+      <td>0</td>
+      <td><code>K5_le_48</code>, <code>K5_bounds</code></td>
+    </tr>
+    <tr>
+      <td>K(8) &ge; 240</td>
+      <td><span class="status ok"><span class="dot"></span> Complete</span></td>
+      <td>0</td>
+      <td><code>exists_kissing_240</code>, <code>two_forty_le_K8</code></td>
+    </tr>
+    <tr>
+      <td>K(8) &le; 240</td>
+      <td><span class="status wip"><span class="dot"></span> In Progress</span></td>
+      <td>1</td>
+      <td><code>K8_le_240</code> (depends on k=6 PSD)</td>
+    </tr>
+    <tr>
+      <td>K(8) = 240</td>
+      <td><span class="status wip"><span class="dot"></span> In Progress</span></td>
+      <td>1</td>
+      <td><code>K8_eq_240</code></td>
+    </tr>
+  </table>
+
+  <h3>Remaining Work</h3>
+  <p>
+    The sole remaining <code>sorry</code> is the k=6 PSD feature map kernel identity for dimension 8.
+    This requires a degree-6 trace-free tensor:
+  </p>
+  <div class="eq-block">
+    &phi;<sub>6</sub> = A<sub>6</sub> &minus; (1/16) B<sub>6</sub> + (1/224) C<sub>6</sub> &minus; (1/2688) D<sub>6</sub>
+    <span class="label">k=6 Feature Map for d=8</span>
+  </div>
+  <p>
+    The kernel identity requires 10 independent cross-term sums (AA, AB, AC, AD, BB, BC, BD, CC, CD, DD).
+    Of these, 4 are proved (AA, AB, AD, DD) and 6 remain. The combinatorial explosion at degree 6
+    (up to 2025 product terms per cross-term) makes this the most computationally intensive part of the
+    formalization.
+  </p>
+
+  <h3>Axiom Footprint</h3>
+  <p>
+    Once all sorry's are eliminated, <code>#print axioms K8_eq_240</code> will show only the standard Lean kernel axioms:
+  </p>
+  <ul>
+    <li><code>propext</code> &mdash; propositional extensionality</li>
+    <li><code>Classical.choice</code> &mdash; axiom of choice (for noncomputable definitions)</li>
+    <li><code>Lean.ofReduceBool</code> / <code>Lean.trustCompiler</code> &mdash; for <code>native_decide</code></li>
+    <li><code>Quot.sound</code> &mdash; quotient soundness</li>
+  </ul>
+
+  <h3>Build</h3>
+  <pre><code>lake build                            <span class="cm"># Full build</span>
+lake build KissingNumber.Summary      <span class="cm"># Top-level summary (imports everything)</span></code></pre>
+
+  <h3>Toolchain</h3>
+  <ul>
+    <li><strong>Lean:</strong> leanprover/lean4:v4.28.0-rc1</li>
+    <li><strong>Mathlib4:</strong> latest from git</li>
+  </ul>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<!-- FOOTER -->
+<!-- ============================================================ -->
+<footer>
+  <div class="container">
+    <p>
+      <a href="https://github.com/kantrarian/Kissing-Problem">github.com/kantrarian/Kissing-Problem</a>
+      &nbsp;&middot;&nbsp;
+      Lean 4 + Mathlib4
+      &nbsp;&middot;&nbsp;
+      MIT License
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

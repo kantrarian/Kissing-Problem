@@ -26,9 +26,9 @@ All configurations are proven to satisfy:
 - `12 ≤ K(3)` via D3 root system witness
 - `40 ≤ K(5) ≤ 48` via D5 witness (lower) + Delsarte LP certificate (upper)
   - Certificate: f(t) = (t+5/7)²(t+1/7)²(t-1/2), bound = 48
-  - Upper bound: PSD proved for k=1,2,3 via feature maps; sorry for k=4,5
+  - Upper bound: PSD proved for all k=1,...,5 via trace-free tensor feature maps
 - `K(8) = 240` via E8 witness (lower bound) + Delsarte LP bound (upper bound)
-  - Upper bound: PSD proved for k=1,2,3,4,5 via feature maps; sorry for k=6
+  - Upper bound: PSD proved for k=1,...,5 via feature maps; sorry for k=6
 -/
 
 /-- The kissing number in dimension 3 is at least 12. -/
@@ -61,7 +61,7 @@ theorem two_forty_le_K8 : (240 : WithTop ℕ) ≤ K 8 :=
 
 /-- The kissing number in dimension 5 is at most 48.
     Certificate: f(t) = (t+5/7)²(t+1/7)²(t-1/2).
-    PSD for k=1,2,3 proved via feature maps; k=4,5 sorry'd. -/
+    All PSD conditions proved via trace-free tensor feature maps. -/
 theorem K5_le_48_summary : K 5 ≤ 48 := K5_le_48
 
 /-- Combined bounds for dimension 5: 40 ≤ K(5) ≤ 48. -/
@@ -71,5 +71,5 @@ theorem K5_bounds_summary : (40 : WithTop ℕ) ≤ K 5 ∧ K 5 ≤ 48 := K5_boun
 
 /-- The kissing number in dimension 8 is exactly 240.
     Lower bound: E8 root system witness (axiom-free).
-    Upper bound: Delsarte LP bound; PSD for k=1,2,3,4,5 proved, k=6 sorry. -/
+    Upper bound: Delsarte LP bound; PSD for k=1,...,5 proved, k=6 sorry. -/
 theorem K8_eq_240_summary : K 8 = 240 := K8_eq_240
