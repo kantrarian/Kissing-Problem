@@ -3,6 +3,7 @@ import KissingNumber.D5
 import KissingNumber.Witness.E8
 import KissingNumber.K
 import KissingNumber.Certificates.LP_K8_240
+import KissingNumber.Certificates.LP_K5_48
 
 open KissingNumber
 
@@ -23,7 +24,9 @@ All configurations are proven to satisfy:
 
 ## Formal Bounds on K(n):
 - `12 ≤ K(3)` via D3 root system witness
-- `40 ≤ K(5)` via D5 root system witness
+- `40 ≤ K(5) ≤ 48` via D5 witness (lower) + Delsarte LP certificate (upper)
+  - Certificate: f(t) = (t+5/7)²(t+1/7)²(t-1/2), bound = 48
+  - Upper bound: PSD proved for k=1,2,3 via feature maps; sorry for k=4,5
 - `K(8) = 240` via E8 witness (lower bound) + Delsarte LP bound (upper bound)
   - Upper bound: PSD proved for k=1,2,3,4,5 via feature maps; sorry for k=6
 -/
@@ -53,6 +56,16 @@ theorem forty_le_K5 : (40 : WithTop ℕ) ≤ K 5 :=
 
 theorem two_forty_le_K8 : (240 : WithTop ℕ) ≤ K 8 :=
   le_K_of_exists exists_kissing_240
+
+/-! ## Upper bounds via Delsarte LP -/
+
+/-- The kissing number in dimension 5 is at most 48.
+    Certificate: f(t) = (t+5/7)²(t+1/7)²(t-1/2).
+    PSD for k=1,2,3 proved via feature maps; k=4,5 sorry'd. -/
+theorem K5_le_48_summary : K 5 ≤ 48 := K5_le_48
+
+/-- Combined bounds for dimension 5: 40 ≤ K(5) ≤ 48. -/
+theorem K5_bounds_summary : (40 : WithTop ℕ) ≤ K 5 ∧ K 5 ≤ 48 := K5_bounds
 
 /-! ## Exact kissing number for dimension 8 -/
 

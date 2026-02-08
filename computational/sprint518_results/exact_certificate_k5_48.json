@@ -1,0 +1,139 @@
+{
+  "certificate": "(t + 5/7)^2 * (t + 1/7)^2 * (t - 1/2)",
+  "dimension": 5,
+  "lambda": "3/2",
+  "bound": "48",
+  "bound_float": 48.0,
+  "bound_integer": 48,
+  "standard_coefficients": [
+    {
+      "index": 0,
+      "value": "-25/4802",
+      "float": -0.005206164098292378
+    },
+    {
+      "index": 1,
+      "value": "-185/2401",
+      "float": -0.0770512286547272
+    },
+    {
+      "index": 2,
+      "value": "-101/343",
+      "float": -0.2944606413994169
+    },
+    {
+      "index": 3,
+      "value": "4/49",
+      "float": 0.08163265306122448
+    },
+    {
+      "index": 4,
+      "value": "17/14",
+      "float": 1.2142857142857142
+    },
+    {
+      "index": 5,
+      "value": "1",
+      "float": 1.0
+    }
+  ],
+  "gegenbauer_coefficients": [
+    {
+      "k": 0,
+      "value": "96/2401",
+      "numerator": 96,
+      "denominator": 2401,
+      "float": 0.03998334027488547
+    },
+    {
+      "k": 1,
+      "value": "1412/7203",
+      "numerator": 1412,
+      "denominator": 7203,
+      "float": 0.1960294321810357
+    },
+    {
+      "k": 2,
+      "value": "424/1029",
+      "numerator": 424,
+      "denominator": 1029,
+      "float": 0.41205053449951407
+    },
+    {
+      "k": 3,
+      "value": "2136/3773",
+      "numerator": 2136,
+      "denominator": 3773,
+      "float": 0.5661277498012192
+    },
+    {
+      "k": 4,
+      "value": "68/147",
+      "numerator": 68,
+      "denominator": 147,
+      "float": 0.46258503401360546
+    },
+    {
+      "k": 5,
+      "value": "8/33",
+      "numerator": 8,
+      "denominator": 33,
+      "float": 0.24242424242424243
+    }
+  ],
+  "f_at_1": "4608/2401",
+  "f_at_neg1": "-216/2401",
+  "gegenbauer_polynomials": [
+    {
+      "k": 0,
+      "coefficients": [
+        "1"
+      ]
+    },
+    {
+      "k": 1,
+      "coefficients": [
+        "0",
+        "1"
+      ]
+    },
+    {
+      "k": 2,
+      "coefficients": [
+        "-1/4",
+        "0",
+        "5/4"
+      ]
+    },
+    {
+      "k": 3,
+      "coefficients": [
+        "0",
+        "-3/4",
+        "0",
+        "7/4"
+      ]
+    },
+    {
+      "k": 4,
+      "coefficients": [
+        "1/8",
+        "0",
+        "-7/4",
+        "0",
+        "21/8"
+      ]
+    },
+    {
+      "k": 5,
+      "coefficients": [
+        "0",
+        "5/8",
+        "0",
+        "-15/4",
+        "0",
+        "33/8"
+      ]
+    }
+  ]
+}
