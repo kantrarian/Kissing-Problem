@@ -17,7 +17,7 @@ and verifies all conditions needed to apply the Delsarte bound.
 4. g(1)/c₀ = 240
 
 Combined with the lower bound K(8) ≥ 240 from the E8 witness,
-this yields K(8) = 240 (modulo sorry's in PSD.lean for k=4,5,6 feature maps).
+this yields K(8) = 240.
 -/
 
 open scoped BigOperators RealInnerProductSpace
@@ -93,8 +93,7 @@ theorem e8_bound_value : e8_cert 1 = e8_coeff 0 * 240 := by
 /-- The kissing number in dimension 8 is at most 240.
 
     This uses the Delsarte LP bound with the E8 certificate polynomial.
-    The PSD property is proved via feature map kernel identities in PSD.lean.
-    Remaining sorry's: phi4_kernel (k=4), k=5, k=6 feature maps. -/
+    The PSD property is proved via feature map kernel identities in PSD.lean. -/
 theorem K8_le_240 : K 8 ≤ 240 := by
   apply sSup_le
   intro x hx

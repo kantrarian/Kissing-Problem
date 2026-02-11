@@ -1,6 +1,7 @@
 import KissingNumber.Gegenbauer
 import KissingNumber.PSD4CrossTerms
 import KissingNumber.PSD5CrossTerms
+import KissingNumber.PSD6CrossTerms
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Data.Real.Basic
@@ -258,6 +259,6 @@ theorem P8_sum_nonneg (k : Fin 7) (hk : k ≠ 0) :
   · exact psd_of_kernel u (7 / 10) (by norm_num) phi3 phi3_kernel hunit
   · exact psd_of_kernel u (21 / 40) (by norm_num) phi4Feature phi4Feature_kernel hunit
   · exact psd_of_kernel u (3 / 8) (by norm_num) phi5Feature phi5Feature_kernel hunit
-  · sorry -- k=6: feature map proof deferred
+  · exact psd_of_kernel u (231 / 896) (by norm_num) phi6Feature phi6Feature_kernel hunit
 
 end

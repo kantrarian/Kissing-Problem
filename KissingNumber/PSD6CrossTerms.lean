@@ -397,13 +397,289 @@ private lemma sum_DA (x y : EuclideanSpace ℝ (Fin 8)) (hy : ‖y‖ = 1) :
 private lemma sum_BB (x y : EuclideanSpace ℝ (Fin 8)) (hx : ‖x‖ = 1) (hy : ‖y‖ = 1) :
     ∑ p : T6, B6 x p * B6 y p =
     240 * (@inner ℝ _ _ x y) ^ 4 + 90 * (@inner ℝ _ _ x y) ^ 2 := by
-  sorry
+  set s := @inner ℝ _ _ x y
+  have hs : s = ∑ a : Fin 8, x.ofLp a * y.ofLp a := inner_ofLp x y
+  have hxn := ofLp_norm_sq x hx
+  have hyn := ofLp_norm_sq y hy
+  simp only [B6]
+  simp_rw [Fintype.sum_prod_type]
+  simp (config := { maxSteps := 800000000 }) only [add_mul, mul_add, Finset.sum_add_distrib]
+  simp (config := { maxSteps := 800000000 }) only [mul_ite, mul_zero, ite_mul, zero_mul, one_mul]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp_rw (config := { maxSteps := 800000000 }) [sum_ite_prop_zero]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  have rbb1 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp a * y.ofLp b * y.ofLp c * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb2 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp b * y.ofLp a * y.ofLp c * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb3 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp c * y.ofLp a * y.ofLp b * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb4 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp d * y.ofLp a * y.ofLp b * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb5 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp d * y.ofLp d * y.ofLp b * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb6 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp d * y.ofLp d * y.ofLp b * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb7 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp d * y.ofLp d * y.ofLp b * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb8 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp d * y.ofLp d * y.ofLp a * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb9 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp d * y.ofLp d * y.ofLp a * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb10 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp d * y.ofLp d * y.ofLp a * y.ofLp b =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb11 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp a * y.ofLp c * y.ofLp b * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb12 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp a * y.ofLp d * y.ofLp b * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb13 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp d * y.ofLp a * y.ofLp d * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb14 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp d * y.ofLp a * y.ofLp d * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb15 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp d * y.ofLp a * y.ofLp d * y.ofLp b =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb16 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp a * y.ofLp b * y.ofLp d * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb17 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp d * y.ofLp b * y.ofLp d * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb18 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp d * y.ofLp b * y.ofLp d * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb19 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp d * y.ofLp a * y.ofLp b * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb20 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp b * y.ofLp c * y.ofLp a * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb21 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp d * y.ofLp b * y.ofLp d * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb22 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp d * y.ofLp b * y.ofLp c * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb23 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp d * y.ofLp a * y.ofLp c * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb24 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp b * y.ofLp c * y.ofLp d * y.ofLp a =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb25 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp d * y.ofLp a * y.ofLp c * y.ofLp d * y.ofLp b =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (x.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb26 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp d * y.ofLp b * y.ofLp c * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb27 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp d * y.ofLp b * y.ofLp c * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb28 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp d * y.ofLp a * y.ofLp c * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb29 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp a * y.ofLp d * y.ofLp d * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb30 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp a * y.ofLp d * y.ofLp d * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb31 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp a * y.ofLp d * y.ofLp d * y.ofLp b =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb32 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp a * y.ofLp d * y.ofLp b * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb33 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp a * y.ofLp d * y.ofLp c * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb34 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp a * y.ofLp d * y.ofLp c * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb35 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp b * y.ofLp d * y.ofLp d * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb36 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp b * y.ofLp d * y.ofLp d * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb37 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp a * y.ofLp b * y.ofLp d * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb38 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp b * y.ofLp d * y.ofLp c * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb39 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp b * y.ofLp d * y.ofLp c * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb40 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp b * y.ofLp d * y.ofLp d * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb41 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp b * y.ofLp c * y.ofLp d * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb42 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp a * y.ofLp c * y.ofLp d * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb43 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp b * y.ofLp d * y.ofLp c * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb44 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp b * y.ofLp c * y.ofLp d * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb45 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp b * y.ofLp c * y.ofLp d * y.ofLp d =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  have rbb46 : forall a b c d : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp a * y.ofLp c * y.ofLp d * y.ofLp d =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) * (y.ofLp d * y.ofLp d) := by
+    intros; ring
+  simp_rw [rbb1, rbb2, rbb3, rbb4, rbb5, rbb6, rbb7, rbb8, rbb9, rbb10, rbb11, rbb12, rbb13,
+    rbb14, rbb15, rbb16, rbb17, rbb18, rbb19, rbb20, rbb21, rbb22, rbb23, rbb24, rbb25, rbb26,
+    rbb27, rbb28, rbb29, rbb30, rbb31, rbb32, rbb33, rbb34, rbb35, rbb36, rbb37, rbb38, rbb39,
+    rbb40, rbb41, rbb42, rbb43, rbb44, rbb45, rbb46, factor4, hxn, hyn, ← hs]
+  simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, Nat.cast_ofNat]
+  ring
 
 -- sum_BC: ∑ B6(x,p)*C6(y,p) = 1260*s^2 + 45
 private lemma sum_BC (x y : EuclideanSpace ℝ (Fin 8)) (hx : ‖x‖ = 1) (hy : ‖y‖ = 1) :
     ∑ p : T6, B6 x p * C6 y p =
     1260 * (@inner ℝ _ _ x y) ^ 2 + 45 := by
-  sorry
+  set s := @inner ℝ _ _ x y
+  have hs : s = ∑ a : Fin 8, x.ofLp a * y.ofLp a := inner_ofLp x y
+  have hxn := ofLp_norm_sq x hx
+  have hyn := ofLp_norm_sq y hy
+  simp only [B6, C6]
+  simp_rw [Fintype.sum_prod_type]
+  simp (config := { maxSteps := 800000000 }) only [add_mul, mul_add, Finset.sum_add_distrib]
+  simp (config := { maxSteps := 800000000 }) only [mul_ite, mul_zero, mul_one, ite_mul, zero_mul, one_mul]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp_rw (config := { maxSteps := 800000000 }) [sum_ite_prop_zero]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp_rw (config := { maxSteps := 800000000 }) [sum_ite_prop_zero]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  have rbc1 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp b * y.ofLp c * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * x.ofLp b) * (y.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc2 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp b * y.ofLp c * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * x.ofLp b) * (y.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc3 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp a * y.ofLp c * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * x.ofLp b) * (y.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc4 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp b * y.ofLp a =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) := by
+    intros; ring
+  have rbc5 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp c * y.ofLp a =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc6 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp c * y.ofLp a =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc7 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp c * y.ofLp a * y.ofLp b =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * x.ofLp c) := by
+    intros; ring
+  have rbc8 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp c * y.ofLp b =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc9 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp c * y.ofLp b =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc10 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp b * y.ofLp a * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc11 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp c * x.ofLp a * y.ofLp b * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc12 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp c * y.ofLp b =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc13 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp b * x.ofLp c * y.ofLp a * y.ofLp c =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * x.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc14 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp b * x.ofLp a * x.ofLp c * y.ofLp b * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  have rbc15 : forall a b c : Fin 8,
+      x.ofLp a * x.ofLp a * x.ofLp b * x.ofLp c * y.ofLp b * y.ofLp c =
+      (x.ofLp a * x.ofLp a) * (x.ofLp b * y.ofLp b) * (x.ofLp c * y.ofLp c) := by
+    intros; ring
+  simp_rw [rbc1, rbc2, rbc3, rbc4, rbc5, rbc6, rbc7, rbc8, rbc9, rbc10, rbc11, rbc12, rbc13,
+    rbc14, rbc15, factor3, hxn, hyn, ← hs]
+  simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, Nat.cast_ofNat]
+  ring
 
 private lemma sum_CB (x y : EuclideanSpace ℝ (Fin 8)) (hx : ‖x‖ = 1) (hy : ‖y‖ = 1) :
     ∑ p : T6, C6 x p * B6 y p =
@@ -446,7 +722,36 @@ private lemma sum_DB (x y : EuclideanSpace ℝ (Fin 8)) (hx : ‖x‖ = 1) (hy :
 private lemma sum_CC (x y : EuclideanSpace ℝ (Fin 8)) (hx : ‖x‖ = 1) (hy : ‖y‖ = 1) :
     ∑ p : T6, C6 x p * C6 y p =
     7560 * (@inner ℝ _ _ x y) ^ 2 + 1080 := by
-  sorry
+  set s := @inner ℝ _ _ x y
+  have hs : s = ∑ a : Fin 8, x.ofLp a * y.ofLp a := inner_ofLp x y
+  have hxn := ofLp_norm_sq x hx
+  have hyn := ofLp_norm_sq y hy
+  simp only [C6]
+  simp_rw [Fintype.sum_prod_type]
+  simp (config := { maxSteps := 800000000 }) only [add_mul, mul_add, Finset.sum_add_distrib]
+  simp (config := { maxSteps := 800000000 }) only [mul_ite, mul_zero, mul_one, ite_mul, zero_mul, one_mul]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp_rw (config := { maxSteps := 800000000 }) [sum_ite_prop_zero]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp_rw (config := { maxSteps := 800000000 }) [sum_ite_prop_zero]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp_rw (config := { maxSteps := 800000000 }) [sum_ite_prop_zero]
+  simp (config := { maxSteps := 800000000 }) only [Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  have rcc1 : forall a b : Fin 8,
+      x.ofLp a * x.ofLp b * y.ofLp a * y.ofLp b =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) := by
+    intros; ring
+  have rcc2 : forall a b : Fin 8,
+      x.ofLp a * x.ofLp b * y.ofLp b * y.ofLp a =
+      (x.ofLp a * y.ofLp a) * (x.ofLp b * y.ofLp b) := by
+    intros; ring
+  have rcc3 : forall a b : Fin 8,
+      x.ofLp a * x.ofLp a * y.ofLp b * y.ofLp b =
+      (x.ofLp a * x.ofLp a) * (y.ofLp b * y.ofLp b) := by
+    intros; ring
+  simp_rw [rcc1, rcc2, rcc3, factor2, hxn, hyn, ← hs]
+  simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, Nat.cast_ofNat]
+  ring
 
 -- sum_CD: ∑ C6(x,p)*D6(y,p) = 5400 (constant; D6 has no y-dependence)
 set_option maxHeartbeats 1600000000 in
